@@ -187,7 +187,7 @@ Log in to your Pi via SSH and run:
 
 ```bash
 wget -O hb9iiuADSBsetupRPI.sh \
-  https://raw.githubusercontent.com/HB9IIU/ESP32-ADSB_Companion/main/RPI_ADSB_install_script/hb9iiuADSBsetupRPI.sh
+  https://raw.githubusercontent.com/HB9IIU/ESP32_S3_WaveShare-ADSB-Companion/main/RPI_ADSB_install_script/hb9iiuADSBsetupRPI.sh
 chmod +x hb9iiuADSBsetupRPI.sh
 sudo ./hb9iiuADSBsetupRPI.sh
 ```

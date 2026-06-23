@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ESP32-S3 ADSB Companion — Flash Firmware</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: sans-serif;
+      max-width: 860px;
+      margin: 60px auto;
+      padding: 0 20px;
+      background: #111;
+      color: #eee;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 0.25em; }
+    h2 { font-size: 1rem; color: #aaa; margin: 2.5em 0 0.8em; letter-spacing: 0.05em; text-transform: uppercase; }
+    .meta { font-size: 0.85rem; color: #888; margin-bottom: 2em; }
+    p { line-height: 1.6; }
+
+    .flash-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2em;
+      margin-top: 1.5em;
+    }
+    esp-web-install-button { display: block; }
+
+    .note { font-size: 0.8rem; color: #666; margin-top: 3em; }
+  </style>
+</head>
+<body>
+  <h1>ESP32-S3 ADSB Companion</h1>
+  <div class="meta">Version %%VERSION%% &mdash; built %%BUILD_DATE%%</div>
+
+  <p>
+    Flash the latest firmware directly from this page to your
+    <strong>Waveshare ESP32-S3 Touch LCD</strong>.
+    Connect the board via USB, then click Install.
+  </p>
+  <p>Requires <strong>Chrome</strong> or <strong>Edge</strong> (Web Serial API).</p>
+
+  <script type="module"
+    src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module">
+  </script>
+
+  <div class="flash-block">
+    <esp-web-install-button manifest="manifest.json"></esp-web-install-button>
+  </div>
+
+  <div class="note">
+    Source: <a href="https://github.com/HB9IIU/ESP32_S3_WaveShare-ADSB-Companion"
+               style="color:#888">HB9IIU/ESP32_S3_WaveShare-ADSB-Companion</a>
+  </div>
+</body>
+</html>

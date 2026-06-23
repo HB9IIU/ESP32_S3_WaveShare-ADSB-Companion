@@ -329,7 +329,15 @@ void setup() {
             Serial.printf("[map] using IP-geolocated centre: lat=%.4f  lon=%.4f  radius=%.0f km\n",
                           loc.lat, loc.lon, static_cast<double>(MAP_GEO_RADIUS_KM));
         }
-        draw_map();
+        if (draw_map()) {
+            // Auto-save the first downloaded map so subsequent boots are instant.
+            MapSnapshot::save(LittleFS,
+                              mapRequest.centerLat, mapRequest.centerLon,
+                              mapRequest.radiusKm, mapViewport,
+                              [](float) {});
+            savedMapAvailable = true;
+            Serial.println("[map] first-run map auto-saved");
+        }
     }
 }
 

@@ -173,7 +173,7 @@ inline void saveAdsbServer(const char* url) {
 inline uint32_t loadScreensaverTimeout() {
     Preferences p;
     p.begin("adsb_ui", true);
-    const uint32_t v = p.getUInt("ss_timeout", 10);
+    const uint32_t v = p.getUInt("ss_timeout", 60);
     p.end();
     return v;
 }

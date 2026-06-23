@@ -166,4 +166,23 @@ inline void saveAdsbServer(const char* url) {
     p.end();
 }
 
+// ── Screensaver idle timeout ──────────────────────────────────────────────────
+// Stored as seconds; 0 = disabled.
+// Valid cycle values: 0, 10, 30, 60, 300, 900.
+
+inline uint32_t loadScreensaverTimeout() {
+    Preferences p;
+    p.begin("adsb_ui", true);
+    const uint32_t v = p.getUInt("ss_timeout", 10);
+    p.end();
+    return v;
+}
+
+inline void saveScreensaverTimeout(uint32_t seconds) {
+    Preferences p;
+    p.begin("adsb_ui", false);
+    p.putUInt("ss_timeout", seconds);
+    p.end();
+}
+
 } // namespace NVSConfig

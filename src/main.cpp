@@ -43,6 +43,9 @@
 #include "ui/aircraft_picture_page.h"
 #include "ui/aircraft_statistics_page.h"
 #include "ui/home_marker.h"
+#include "ui/legend_page.h"
+#include "ui/clock_screensaver.h"
+#include "screenshot_server.h"
 
 LGFX tft;
 #if AIRCRAFT_LIVE_DATA
@@ -71,6 +74,7 @@ enum class InteractionMode {
     AircraftInfo, // selected-aircraft information page
     AircraftPicture, // selected-aircraft full-screen picture page
     AircraftStatistics, // receiver statistics page
+    ClockScreensaver,  // full-screen clock; loop() short-circuits to ClockScreensaver::update()
 };
 
 enum class MenuAction {
@@ -86,6 +90,8 @@ enum class MenuAction {
     SetHome,
     AdsbServer,
     WiFiSettings,
+    Legend,
+    Screensaver,
 };
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -127,7 +133,7 @@ static void handle_zoom_action(int32_t x, int32_t y);
 //
 // Row 1 — map operations  : Save | Delete | Re-center | Zoom        (4 × 150 px)
 // Row 2 — view / overlays : Fit  | Info   | Tracks    | Set home    (4 × 150 px)
-// Row 3 — settings        :         WiFi  |  ADSB Server            (2 × 190 px, centred)
+// Row 3 — settings        : WiFi | ADSB Server | Legend | Screensaver (4 × 150 px)
 //
 // Vertical spacing: top-pad 30 px, row-gap 30 px, bottom-pad 30 px
 // → kMenuH = 3 × 60 + 4 × 30 = 300 px
@@ -150,14 +156,14 @@ constexpr int32_t kTracksButtonX = kInfoButtonX + kWideButtonW + kWideButtonGap;
 constexpr int32_t kHomeButtonX  = kTracksButtonX + kWideButtonW + kWideButtonGap;
 constexpr int32_t kSecondButtonY = kButtonY + kButtonH + 30;  // 185
 
-// Row 3: two centred settings buttons
-constexpr int32_t kThirdButtonY  = kSecondButtonY + kButtonH + 30;  // 275
-constexpr int32_t kThirdButtonW  = 190;
-constexpr int32_t kThirdButtonGap = 20;
-constexpr int32_t kWiFiButtonX   =
-    kMenuX + (kMenuW - 2 * kThirdButtonW - kThirdButtonGap) / 2;
-constexpr int32_t kAdsbButtonX   = kWiFiButtonX + kThirdButtonW + kThirdButtonGap;
-constexpr int32_t kAdsbButtonW   = kThirdButtonW;
+// Row 3: four settings buttons (150 px each, 10 px gaps) — flush with rows 1 & 2
+constexpr int32_t kThirdButtonY   = kSecondButtonY + kButtonH + 30;  // 275
+constexpr int32_t kThirdButtonW   = 150;
+constexpr int32_t kThirdButtonGap = 10;
+constexpr int32_t kWiFiButtonX    = kFirstButtonX;                                    // 85
+constexpr int32_t kAdsbButtonX    = kWiFiButtonX  + kThirdButtonW + kThirdButtonGap; // 245
+constexpr int32_t kLegendButtonX  = kAdsbButtonX  + kThirdButtonW + kThirdButtonGap; // 405
+constexpr int32_t kSsButtonX      = kLegendButtonX + kThirdButtonW + kThirdButtonGap; // 565
 
 // ── Button colour palette (RGB565) ───────────────────────────────────────────
 // All action-menu and zoom-dialog buttons share this palette so the UI has a
@@ -191,7 +197,9 @@ static SatelliteMap::Request  mapRequest;    // parameters for the next/current 
 static SatelliteMap::Viewport mapViewport;   // Mercator transform of the displayed map
 static bool mapReady          = false;       // true when a valid map is on screen
 static bool savedMapAvailable = false;       // true when a snapshot exists in LittleFS
-static bool infoBarsVisible    = true;        // top legend + bottom live status
+static bool infoBarsVisible      = true;      // top legend + bottom live status
+static uint32_t lastActivityMs   = 0;        // millis() of last touch, reset on map restore
+static uint32_t screensaverTimeoutMs = 0;   // 0 = disabled; set from NVS in setup()
 static double homeLatitude    = HOME_FALLBACK_LAT;
 static double homeLongitude   = HOME_FALLBACK_LON;
 #if AIRCRAFT_LIVE_DATA
@@ -260,6 +268,9 @@ void setup() {
 
     // ── BootManager: WiFi, geolocation, NTP ──────────────────────────────────
     BootManager::run();
+    screensaverTimeoutMs = NVSConfig::loadScreensaverTimeout() * 1000UL;
+    lastActivityMs = millis();
+    ScreenshotServer::begin();
 
 #if AIRCRAFT_LIVE_DATA
     aircraftOverlay.setServerBase(NVSConfig::loadAdsbServer());
@@ -323,6 +334,24 @@ void setup() {
 }
 
 void loop() {
+    // ── Clock screensaver short-circuit ──────────────────────────────────────
+    if (ClockScreensaver::isActive()) {
+        ScreenshotServer::loop();
+        if (ClockScreensaver::update()) {
+            // dismissed — restore map tiles and resume normal mode
+            for (int32_t ry = 0; ry < 480; ry += 64) {
+                const int32_t rh = min(64, 480 - ry);
+                for (int32_t rx = 0; rx < 800; rx += 64) {
+                    const int32_t rw = min(64, 800 - rx);
+                    SatelliteMap::restoreBackground(rx, ry, rw, rh);
+                }
+            }
+            interactionMode = InteractionMode::Normal;
+            lastActivityMs  = millis();
+        }
+        return;
+    }
+
     if (mapReady && interactionMode == InteractionMode::Normal) {
 #if AIRCRAFT_LIVE_DATA
         // update() returns true only when it actually erased and redrew aircraft.
@@ -363,6 +392,7 @@ void loop() {
         touchX       = constrain(x, 0, 799);
         touchY       = constrain(y, 0, 479);
         touchWasDown = true;
+        lastActivityMs = millis();
     } else if (touchWasDown) {
         // Finger just lifted — process the tap with a 300 ms debounce to
         // prevent double-triggering from a single physical touch.
@@ -446,6 +476,16 @@ void loop() {
                 interactionMode = InteractionMode::Normal;
             }
         }
+    }
+
+    ScreenshotServer::loop();
+
+    // Launch screensaver after idle timeout (only in Normal mode with map ready)
+    if (interactionMode == InteractionMode::Normal && mapReady &&
+        screensaverTimeoutMs > 0 &&
+        millis() - lastActivityMs > screensaverTimeoutMs) {
+        ClockScreensaver::open();
+        interactionMode = InteractionMode::ClockScreensaver;
     }
 
     delay(10);
@@ -638,8 +678,17 @@ static void draw_action_menu() {
 #endif
     draw_button(kHomeButtonX, kSecondButtonY, kWideButtonW,
                 "Set home");
-    draw_button(kWiFiButtonX, kThirdButtonY, kThirdButtonW, "WiFi");
-    draw_button(kAdsbButtonX, kThirdButtonY, kAdsbButtonW, "ADSB Server");
+    draw_button(kWiFiButtonX,   kThirdButtonY, kThirdButtonW, "WiFi");
+    draw_button(kAdsbButtonX,   kThirdButtonY, kThirdButtonW, "ADSB Server");
+    draw_button(kLegendButtonX, kThirdButtonY, kThirdButtonW, "Legend");
+    {
+        const uint32_t ssSec = screensaverTimeoutMs / 1000;
+        char ssBuf[16];
+        if (ssSec == 0)       snprintf(ssBuf, sizeof(ssBuf), "SS: off");
+        else if (ssSec < 60)  snprintf(ssBuf, sizeof(ssBuf), "SS: %us",  ssSec);
+        else                   snprintf(ssBuf, sizeof(ssBuf), "SS: %um",  ssSec / 60);
+        draw_button(kSsButtonX, kThirdButtonY, kThirdButtonW, ssBuf);
+    }
     tft.setTextDatum(TL_DATUM);
 }
 
@@ -779,8 +828,14 @@ static MenuAction menu_action_at(int32_t x, int32_t y) {
         if (x >= kWiFiButtonX && x < kWiFiButtonX + kThirdButtonW) {
             return MenuAction::WiFiSettings;
         }
-        if (x >= kAdsbButtonX && x < kAdsbButtonX + kAdsbButtonW) {
+        if (x >= kAdsbButtonX && x < kAdsbButtonX + kThirdButtonW) {
             return MenuAction::AdsbServer;
+        }
+        if (x >= kLegendButtonX && x < kLegendButtonX + kThirdButtonW) {
+            return MenuAction::Legend;
+        }
+        if (x >= kSsButtonX && x < kSsButtonX + kThirdButtonW) {
+            return MenuAction::Screensaver;
         }
     }
     return MenuAction::None;
@@ -804,17 +859,23 @@ static void handle_menu_action(int32_t x, int32_t y) {
     static const char* kBtnLabels[4] = {
         "Save", "Delete", "Re-center", "Zoom"
     };
-    const bool isFitAction = action == MenuAction::FitAircraft;
-    const bool isInfoAction = action == MenuAction::ToggleInfoBars;
-    const bool isTracksAction = action == MenuAction::ToggleTracks;
-    const bool isHomeAction = action == MenuAction::SetHome;
-    const bool isAdsbAction   = action == MenuAction::AdsbServer;
-    const bool isWiFiAction   = action == MenuAction::WiFiSettings;
+    const bool isFitAction         = action == MenuAction::FitAircraft;
+    const bool isInfoAction        = action == MenuAction::ToggleInfoBars;
+    const bool isTracksAction      = action == MenuAction::ToggleTracks;
+    const bool isHomeAction        = action == MenuAction::SetHome;
+    const bool isAdsbAction        = action == MenuAction::AdsbServer;
+    const bool isWiFiAction        = action == MenuAction::WiFiSettings;
+    const bool isLegendAction      = action == MenuAction::Legend;
+    const bool isScreensaverAction = action == MenuAction::Screensaver;
     const bool isRow2Action =
         isFitAction || isInfoAction || isTracksAction || isHomeAction;
+    const bool isRow3Action =
+        isWiFiAction || isAdsbAction || isLegendAction || isScreensaverAction;
     const int32_t btnIdx = static_cast<int32_t>(action) - 1;
-    const int32_t btnX = isWiFiAction ? kWiFiButtonX
-        : isAdsbAction ? kAdsbButtonX
+    const int32_t btnX = isWiFiAction        ? kWiFiButtonX
+        : isAdsbAction        ? kAdsbButtonX
+        : isLegendAction      ? kLegendButtonX
+        : isScreensaverAction ? kSsButtonX
         : isRow2Action
             ? (isFitAction
                 ? kFitButtonX
@@ -822,10 +883,18 @@ static void handle_menu_action(int32_t x, int32_t y) {
                     ? kInfoButtonX
                     : (isTracksAction ? kTracksButtonX : kHomeButtonX)))
             : kFirstButtonX + btnIdx * (kButtonW + kButtonGap);
-    const int32_t btnY = (isAdsbAction || isWiFiAction) ? kThirdButtonY
+    const int32_t btnY = isRow3Action ? kThirdButtonY
         : (isRow2Action ? kSecondButtonY : kButtonY);
-    const int32_t btnW = (isAdsbAction || isWiFiAction) ? kThirdButtonW
+    const int32_t btnW = isRow3Action ? kThirdButtonW
         : (isRow2Action ? kWideButtonW : kButtonW);
+    // For the screensaver button the label is dynamic (shows current timeout).
+    char ssBtnBuf[16] = {};
+    if (isScreensaverAction) {
+        const uint32_t ssSec = screensaverTimeoutMs / 1000;
+        if (ssSec == 0)      snprintf(ssBtnBuf, sizeof(ssBtnBuf), "SS: off");
+        else if (ssSec < 60) snprintf(ssBtnBuf, sizeof(ssBtnBuf), "SS: %us", ssSec);
+        else                  snprintf(ssBtnBuf, sizeof(ssBtnBuf), "SS: %um", ssSec / 60);
+    }
     const char* btnLabel = isFitAction
         ? "Fit aircraft"
         : (isInfoAction
@@ -836,6 +905,10 @@ static void handle_menu_action(int32_t x, int32_t y) {
                     ? "ADSB Server"
                     : (isWiFiAction
                     ? "WiFi"
+                    : (isLegendAction
+                    ? "Legend"
+                    : (isScreensaverAction
+                    ? ssBtnBuf
                     : (isTracksAction
 #if AIRCRAFT_LIVE_DATA
                     ? (aircraftOverlay.tracksVisible()
@@ -843,7 +916,7 @@ static void handle_menu_action(int32_t x, int32_t y) {
 #else
                     ? "Show tracks"
 #endif
-                    : kBtnLabels[btnIdx])))));
+                    : kBtnLabels[btnIdx])))))));
     const bool btnDis =
         (action == MenuAction::Delete && !savedMapAvailable)
 #if AIRCRAFT_LIVE_DATA
@@ -953,6 +1026,37 @@ static void handle_menu_action(int32_t x, int32_t y) {
             Serial.printf("[adsb] server base updated: %s\n", url);
         }
 
+        for (int32_t y = 0; y < 480; y += 64) {
+            const int32_t height = min(64, 480 - y);
+            for (int32_t x = 0; x < 800; x += 64) {
+                const int32_t width = min(64, 800 - x);
+                SatelliteMap::restoreBackground(x, y, width, height);
+            }
+        }
+        interactionMode = InteractionMode::Normal;
+        return;
+    }
+
+    if (action == MenuAction::Screensaver) {
+        // Cycle through timeout values: off → 10s → 30s → 60s → 5m → 15m → off
+        static const uint32_t kTimeouts[] = {0, 10, 30, 60, 300, 900};
+        constexpr size_t kCount = sizeof(kTimeouts) / sizeof(kTimeouts[0]);
+        const uint32_t curSec = screensaverTimeoutMs / 1000;
+        size_t nextIdx = 0;
+        for (size_t i = 0; i < kCount; ++i) {
+            if (kTimeouts[i] == curSec) { nextIdx = (i + 1) % kCount; break; }
+        }
+        screensaverTimeoutMs = kTimeouts[nextIdx] * 1000UL;
+        NVSConfig::saveScreensaverTimeout(kTimeouts[nextIdx]);
+        lastActivityMs = millis();
+        Serial.printf("[ss] timeout set to %u s\n", kTimeouts[nextIdx]);
+        draw_action_menu();  // redraw to show updated label
+        return;
+    }
+
+    if (action == MenuAction::Legend) {
+        close_action_menu();
+        LegendPage::show();
         for (int32_t y = 0; y < 480; y += 64) {
             const int32_t height = min(64, 480 - y);
             for (int32_t x = 0; x < 800; x += 64) {

@@ -57,7 +57,7 @@ private:
     static constexpr uint8_t kSymbolSize = AIRCRAFT_SYMBOL_SIZE;
     static constexpr uint32_t kFetchPeriodMs = 2000;
     static constexpr uint32_t kTrackTtlMs = 15000;
-    static constexpr float kMaximumSeenPositionSeconds = 30.0f;
+    static constexpr float kMaximumSeenPositionSeconds = 60.0f;
     static constexpr size_t kHistoryPointsPerTrack = 32;
     static constexpr size_t kRenderedTrailPointCapacity =
         kDrawCapacity * kHistoryPointsPerTrack;

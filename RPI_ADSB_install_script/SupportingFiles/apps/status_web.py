@@ -25,7 +25,6 @@ SERVICES = [
     "rtl-biast.service",
     "image-builder.service",
     "pi-status-web.service",
-    "route-finder.service",
     "smbd.service",
     "nmbd.service",
 ]

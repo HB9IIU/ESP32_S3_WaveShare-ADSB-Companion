@@ -71,7 +71,6 @@ RAW_IMAGE_BUILDER="https://raw.githubusercontent.com/HB9IIU/ESP32-ADSB_Companion
 RAW_ADSB_STATS="https://raw.githubusercontent.com/HB9IIU/ESP32-ADSB_Companion/main/RPI_ADSB_install_script/SupportingFiles/apps/adsb-stats.py"
 RAW_PHOTO_GALLERY="https://raw.githubusercontent.com/HB9IIU/ESP32-ADSB_Companion/main/RPI_ADSB_install_script/SupportingFiles/apps/photoGallery.py"
 RAW_WEB_STATUS="https://raw.githubusercontent.com/HB9IIU/ESP32-ADSB_Companion/main/RPI_ADSB_install_script/SupportingFiles/apps/status_web.py"
-RAW_ROUTE_FINDER="https://raw.githubusercontent.com/HB9IIU/ESP32-ADSB_Companion/main/RPI_ADSB_install_script/SupportingFiles/apps/routeFinder.py"
 RAW_DASHBOARD="https://raw.githubusercontent.com/HB9IIU/ESP32-ADSB_Companion/main/RPI_ADSB_install_script/SupportingFiles/web/index.html"
 
 # ==========================================================
@@ -482,7 +481,6 @@ download "$RAW_IMAGE_BUILDER"  "$BASE_DIR/imageBuilder.py"
 download "$RAW_ADSB_STATS"    "$BASE_DIR/adsb-stats.py"
 download "$RAW_PHOTO_GALLERY" "$BASE_DIR/photoGallery.py"
 download "$RAW_WEB_STATUS"    "$BASE_DIR/status_web.py"
-download "$RAW_ROUTE_FINDER"  "$BASE_DIR/routeFinder.py"
 
 # ==========================================================
 # ── 9) Flags (sparse-checkout) ────────────────────────────
@@ -589,25 +587,6 @@ Environment=STATUS_PORT=8080
 WantedBy=multi-user.target
 EOF
 
-cat > /etc/systemd/system/route-finder.service << EOF
-[Unit]
-Description=Route Finder Flask server
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=simple
-WorkingDirectory=${BASE_DIR}
-ExecStart=${VENV_DIR}/bin/python3 ${BASE_DIR}/routeFinder.py
-Restart=always
-RestartSec=3
-Environment=HOST=0.0.0.0
-Environment=PORT=6969
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
 cat > /etc/systemd/system/photo-gallery.service << EOF
 [Unit]
 Description=ADS-B Photo Gallery generator
@@ -651,7 +630,6 @@ _start_unit() {
 _start_unit adsb-stats.timer
 _start_unit image-builder.service
 _start_unit pi-status-web.service
-_start_unit route-finder.service
 systemctl enable --now photo-gallery.timer && systemctl restart photo-gallery.timer
 _start_unit photo-gallery.timer
 
@@ -751,13 +729,11 @@ echo "🔎 Service checks:"
 echo "   systemctl status image-builder.service --no-pager"
 echo "   systemctl status adsb-stats.timer --no-pager"
 echo "   systemctl status pi-status-web.service --no-pager"
-echo "   systemctl status route-finder.service --no-pager"
 echo "   systemctl status photo-gallery.timer --no-pager"
 echo
 echo "🪵 Logs:"
 echo "   journalctl -u image-builder.service -f"
 echo "   journalctl -u pi-status-web.service -f"
-echo "   journalctl -u route-finder.service -f"
 echo
 
 SCRIPT_END_TS=$(date +%s)

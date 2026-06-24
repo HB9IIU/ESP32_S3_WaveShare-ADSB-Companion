@@ -710,7 +710,6 @@ echo "📡  aircraft.json:   ${AIRCRAFT_URL}"
 echo "📊  ADS-B Stats:     http://${IP}/stats.html"
 echo "🖼️  Photo Gallery:   http://${IP}/gallery.html"
 echo "🌐  Status page:     ${STATUS_URL}"
-echo "✈️   Route Finder:    http://${IP}:6969/"
 echo
 echo "➡️  Use: ${AIRCRAFT_URL} in the config file for your ESP32 TFT monitor"
 echo

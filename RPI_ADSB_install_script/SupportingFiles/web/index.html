@@ -257,18 +257,6 @@
       </a>
     </div>
 
-    <!-- Route Finder -->
-    <div class="col-12 col-sm-6 col-lg-4">
-      <a href="#" id="link-route" class="scard">
-        <div class="d-flex justify-content-between align-items-start">
-          <span class="scard-icon"><i class="bi bi-signpost-split"></i></span>
-          <span class="sdot" id="dot-route"></span>
-        </div>
-        <div class="scard-title">Route Finder</div>
-        <div class="scard-desc">Origin / destination lookup by ICAO hex via hexdb.io. Powers the flight-info page on the ESP32 display.</div>
-        <div class="scard-foot" id="foot-route">:6969 · /api/flight/&lt;hex&gt;</div>
-      </a>
-    </div>
 
     <!-- Aircraft JSON -->
     <div class="col-12 col-sm-6 col-lg-4">
@@ -335,7 +323,6 @@
 
   // ── Dynamic links ──────────────────────────────────────────
   document.getElementById('link-status').href = `http://${host}:8080/`;
-  document.getElementById('link-route').href  = `http://${host}:6969/`;
   document.getElementById('hostname').textContent = host;
 
   // SMB paths
@@ -433,7 +420,6 @@
     checkStatic('/stats.html',   'dot-stats');
     checkStatic('/gallery.html', 'dot-gallery');
     checkUrl(`http://${host}:8080/api/status`,  'dot-status');
-    checkUrl(`http://${host}:6969/api/health`,  'dot-route');
   }
 
   refresh();

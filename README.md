@@ -20,20 +20,20 @@ The page always serves the firmware built from the latest `main` commit. No driv
 
 ## Screenshots
 
-| Main Radar | Map Menu |
-|:---:|:---:|
-| ![Main radar screen](screenshots/mainscreen.png) | ![Map actions menu](screenshots/menu.png) |
-| *Live aircraft overlay on ESRI World Imagery satellite map* | *Map actions menu — re-centre, zoom, save* |
-
-| Aircraft Info | Aircraft Picture |
-|:---:|:---:|
-| ![Aircraft info page](screenshots/flightinfo.png) | ![Aircraft picture page](screenshots/plane.png) |
-| *Flight details — route, altitude, speed, bearing* | *Full-screen aircraft photo fetched from the Pi* |
-
-| Statistics |
+| Main Radar |
 |:---:|
-| ![Statistics page](screenshots/statistics.png) |
-| *Live and all-time ADS-B records* |
+| ![Main radar screen](screenshots/mainscreen.png) |
+| *Live aircraft overlay on ESRI World Imagery satellite map* |
+
+| Map Menu | Aircraft Info |
+|:---:|:---:|
+| ![Map actions menu](screenshots/menu.png) | ![Aircraft info page](screenshots/flightinfo.png) |
+| *Map actions menu — re-centre, zoom, save* | *Flight details — route, altitude, speed, bearing* |
+
+| Aircraft Picture | Statistics |
+|:---:|:---:|
+| ![Aircraft picture page](screenshots/plane.png) | ![Statistics page](screenshots/statistics.png) |
+| *Full-screen aircraft photo fetched from the Pi* | *Live and all-time ADS-B records* |
 
 ---
 

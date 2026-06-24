@@ -172,39 +172,79 @@ On first boot (or after a factory reset), the device launches an access point na
 
 ## Raspberry Pi ADS-B Receiver Setup
 
-The ESP32 pulls aircraft data from a local ADS-B receiver running **tar1090 / dump1090**. The recommended setup uses a Raspberry Pi with the HB9IIU install script from the original companion repository.
+The ESP32 pulls aircraft data from a local ADS-B receiver running **readsb / tar1090**. The recommended setup uses a Raspberry Pi with an RTL-SDR dongle and the HB9IIU install script.
 
 ### Hardware
 
 - Raspberry Pi Zero 2W (or Pi 3 / 4 / 5)
-- MicroSD card
+- MicroSD card (8 GB+)
 - RTL-SDR dongle (RTL-SDR Blog V4 recommended)
-- ADS-B antenna
+- ADS-B antenna (1090 MHz)
 
-### Install
+### 1 — Flash the SD card
 
-Log in to your Pi via SSH and run:
+Use **[Raspberry Pi Imager](https://www.raspberrypi.com/software/)** to write the OS to the card.
+
+**OS:** Choose **Raspberry Pi OS Lite (64-bit)** — a port of Debian Trixie with no desktop environment, compatible with Pi 3 / 4 / 400 / 5.
+
+In the **OS Customisation** screen (click *Edit Settings*) configure:
+
+| Setting | Value |
+|---------|-------|
+| Hostname | `little-adsb` |
+| Username | `pi` |
+| Password | *(your choice)* |
+| Wi-Fi SSID / password | *(your network)* |
+| Wi-Fi country | *(your country)* |
+| SSH | **Enable** (password authentication) |
+
+Write the card, insert it into the Pi, and power on. The Pi will appear on your network as `little-adsb.local` within a minute.
+
+### 2 — Run the install script
+
+SSH into the Pi:
 
 ```bash
-wget -O hb9iiuADSBsetupRPI.sh \
-  https://raw.githubusercontent.com/HB9IIU/ESP32_S3_WaveShare-ADSB-Companion/main/RPI_ADSB_install_script/hb9iiuADSBsetupRPI.sh
-chmod +x hb9iiuADSBsetupRPI.sh
-sudo ./hb9iiuADSBsetupRPI.sh
+ssh pi@little-adsb.local
 ```
 
-Press ENTER to accept defaults. The script takes up to 12 minutes — do not interrupt it. It installs and configures readsb, tar1090, the image builder, the route-finder service (port 6969), and a lighttpd web server.
+Then download and run the install script:
 
-### Verify
+```bash
+wget -qO /tmp/install.sh \
+  https://raw.githubusercontent.com/HB9IIU/ESP32_S3_WaveShare-ADSB-Companion/main/RPI_ADSB_install_script/hb9iiuADSBsetupRPI.sh \
+  && sudo bash /tmp/install.sh
+```
 
-Replace `<PI-IP>` with your Pi's IP address:
+The script will prompt you for:
+- **Bias-T** — enable if your antenna needs power from the dongle (default: yes)
+- **Gain** — `auto` / `low` / `high` (default: auto)
+- **Latitude / Longitude** — your receiver location (used for range rings)
+
+Press ENTER to accept defaults. The script takes about 10–15 minutes — do not interrupt it. It installs and configures readsb, tar1090, Python services, Samba shares, and a lighttpd web server. The Pi reboots automatically when done.
+
+### 3 — Verify
+
+Once the Pi has rebooted, open a browser and replace `little-adsb.local` with the Pi's IP if mDNS is not available on your network:
 
 | URL | Description |
 |-----|-------------|
-| `http://<PI-IP>/tar1090/` | Live aircraft map |
-| `http://<PI-IP>/tar1090/data/aircraft.json` | Raw JSON feed (used by ESP32) |
-| `http://<PI-IP>:8080` | System status dashboard |
-| `http://<PI-IP>:6969/api/flight/<icao>` | Route detail microservice |
-| `http://<PI-IP>/stats_tft.json` | Statistics for the display |
+| `http://little-adsb.local/` | Station dashboard |
+| `http://little-adsb.local/tar1090/` | Live aircraft map |
+| `http://little-adsb.local/tar1090/data/aircraft.json` | Raw JSON feed (used by ESP32) |
+| `http://little-adsb.local:8080` | System status (services, CPU, memory) |
+| `http://little-adsb.local/stats.html` | ADS-B statistics |
+| `http://little-adsb.local/gallery.html` | Aircraft photo gallery |
+
+### Uninstall / clean slate
+
+To wipe everything and start fresh:
+
+```bash
+wget -qO /tmp/uninstall.sh \
+  https://raw.githubusercontent.com/HB9IIU/ESP32_S3_WaveShare-ADSB-Companion/main/RPI_ADSB_install_script/hb9iiuADSBuninstall.sh \
+  && sudo bash /tmp/uninstall.sh
+```
 
 ---
 

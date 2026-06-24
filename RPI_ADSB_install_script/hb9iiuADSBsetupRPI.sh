@@ -64,14 +64,14 @@ WEB_INDEX="/var/www/html/index.html"
 # ==========================================================
 # ── Remote URLs ────────────────────────────────────────────
 # ==========================================================
-REPO_URL="https://github.com/HB9IIU/ESP32-ADSB_Companion.git"
+REPO_URL="https://github.com/HB9IIU/ESP32_S3_WaveShare-ADSB-Companion.git"
 FLAGS_PATH="RPI_ADSB_install_script/SupportingFiles/flags"
 
-RAW_IMAGE_BUILDER="https://raw.githubusercontent.com/HB9IIU/ESP32-ADSB_Companion/main/RPI_ADSB_install_script/SupportingFiles/apps/imageBuilder.py"
-RAW_ADSB_STATS="https://raw.githubusercontent.com/HB9IIU/ESP32-ADSB_Companion/main/RPI_ADSB_install_script/SupportingFiles/apps/adsb-stats.py"
-RAW_PHOTO_GALLERY="https://raw.githubusercontent.com/HB9IIU/ESP32-ADSB_Companion/main/RPI_ADSB_install_script/SupportingFiles/apps/photoGallery.py"
-RAW_WEB_STATUS="https://raw.githubusercontent.com/HB9IIU/ESP32-ADSB_Companion/main/RPI_ADSB_install_script/SupportingFiles/apps/status_web.py"
-RAW_DASHBOARD="https://raw.githubusercontent.com/HB9IIU/ESP32-ADSB_Companion/main/RPI_ADSB_install_script/SupportingFiles/web/index.html"
+RAW_IMAGE_BUILDER="https://raw.githubusercontent.com/HB9IIU/ESP32_S3_WaveShare-ADSB-Companion/main/RPI_ADSB_install_script/SupportingFiles/apps/imageBuilder.py"
+RAW_ADSB_STATS="https://raw.githubusercontent.com/HB9IIU/ESP32_S3_WaveShare-ADSB-Companion/main/RPI_ADSB_install_script/SupportingFiles/apps/adsb-stats.py"
+RAW_PHOTO_GALLERY="https://raw.githubusercontent.com/HB9IIU/ESP32_S3_WaveShare-ADSB-Companion/main/RPI_ADSB_install_script/SupportingFiles/apps/photoGallery.py"
+RAW_WEB_STATUS="https://raw.githubusercontent.com/HB9IIU/ESP32_S3_WaveShare-ADSB-Companion/main/RPI_ADSB_install_script/SupportingFiles/apps/status_web.py"
+RAW_DASHBOARD="https://raw.githubusercontent.com/HB9IIU/ESP32_S3_WaveShare-ADSB-Companion/main/RPI_ADSB_install_script/SupportingFiles/web/index.html"
 
 # ==========================================================
 # ── Helper functions ───────────────────────────────────────

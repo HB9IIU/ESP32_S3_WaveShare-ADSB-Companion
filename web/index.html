@@ -29,6 +29,30 @@
     esp-web-install-button { display: block; }
 
     .note { font-size: 0.8rem; color: #666; margin-top: 3em; }
+
+    .screenshots { margin-top: 2.5em; }
+    .screenshots img {
+      width: 100%;
+      border-radius: 8px;
+      display: block;
+      margin-bottom: 0.4em;
+    }
+    .screenshots .caption {
+      font-size: 0.75rem;
+      color: #666;
+      text-align: center;
+      margin-bottom: 1.5em;
+    }
+    .screenshots .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1em;
+    }
+    .screenshots .grid .item { display: flex; flex-direction: column; }
+    .screenshots .grid .item img { margin-bottom: 0.3em; }
+    @media (max-width: 540px) {
+      .screenshots .grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -48,6 +72,32 @@
 
   <div class="flash-block">
     <esp-web-install-button manifest="manifest.json"></esp-web-install-button>
+  </div>
+
+  <div class="screenshots">
+    <h2>Screenshots</h2>
+
+    <img src="screenshots/mainscreen.png" alt="Main radar screen" />
+    <div class="caption">Live aircraft overlay on ESRI World Imagery satellite map</div>
+
+    <div class="grid">
+      <div class="item">
+        <img src="screenshots/menu.png" alt="Map actions menu" />
+        <div class="caption">Map actions menu — re-centre, zoom, save</div>
+      </div>
+      <div class="item">
+        <img src="screenshots/flightinfo.png" alt="Aircraft info page" />
+        <div class="caption">Flight details — route, altitude, speed, bearing</div>
+      </div>
+      <div class="item">
+        <img src="screenshots/plane.png" alt="Aircraft picture page" />
+        <div class="caption">Full-screen aircraft photo fetched from the Pi</div>
+      </div>
+      <div class="item">
+        <img src="screenshots/statistics.png" alt="Statistics page" />
+        <div class="caption">Live and all-time ADS-B records</div>
+      </div>
+    </div>
   </div>
 
   <div class="note">

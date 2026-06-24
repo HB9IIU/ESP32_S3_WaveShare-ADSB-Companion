@@ -74,6 +74,9 @@ jobs:
           find web/ -type f ! -name "*.html" ! -name "*.json" \
             -exec cp {} deploy/ \;
 
+          # Copy screenshots
+          cp -r screenshots deploy/screenshots
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 

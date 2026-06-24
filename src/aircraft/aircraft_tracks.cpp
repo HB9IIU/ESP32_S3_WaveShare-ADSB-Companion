@@ -7,7 +7,7 @@ namespace AircraftTracks {
 namespace {
 
 constexpr uint8_t kPointSize = 2;
-constexpr uint32_t kRecordIntervalMs = 4000;
+constexpr uint32_t kRecordIntervalMs = 2000;
 constexpr uint32_t kHistoryAgeMs = 10 * 60 * 1000;
 constexpr float kMinimumCoordinateChange = 0.00005f;
 

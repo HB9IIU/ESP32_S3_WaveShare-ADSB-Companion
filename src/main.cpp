@@ -167,14 +167,15 @@ constexpr int32_t kSsButtonX      = kLegendButtonX + kThirdButtonW + kThirdButto
 
 // ── Button colour palette (RGB565) ───────────────────────────────────────────
 // All action-menu and zoom-dialog buttons share this palette so the UI has a
-// single consistent visual language.  The 3D bevel is achieved with two extra
-// lines per button: kBtnHi on top/left (light), kBtnSh on bottom/right (dark).
-constexpr uint32_t kBtnFace    = 0x3AD0; // slate-blue face  ~RGB(56,88,128)
-constexpr uint32_t kBtnHi      = 0x5BF5; // top/left highlight ~RGB(88,124,168)
-constexpr uint32_t kBtnSh      = 0x1968; // bottom/right shadow ~RGB(24,44,64)
+// single consistent visual language.  Double 3D bevel: kBtnHi (outer bright) +
+// kBtnHi2 (inner softer) on top/left; kBtnSh (deep shadow) on bottom/right.
+constexpr uint32_t kBtnFace    = 0x2966; // dark gunmetal face  ~RGB(40,44,48)
+constexpr uint32_t kBtnHi      = 0xB5D7; // outer bright highlight ~RGB(176,184,184)
+constexpr uint32_t kBtnHi2     = 0x6B6D; // inner bevel highlight ~RGB(104,108,104)
+constexpr uint32_t kBtnSh      = 0x10A3; // deep shadow ~RGB(16,20,24)
 constexpr uint32_t kBtnText    = 0xFFFF; // white label text
-constexpr uint32_t kBtnDisFace = 0x2967; // disabled face (dark muted)
-constexpr uint32_t kBtnDisText = 0x7BD1; // disabled label (medium grey)
+constexpr uint32_t kBtnDisFace = 0x39E7; // disabled face ~RGB(56,60,56)
+constexpr uint32_t kBtnDisText = 0x528A; // disabled label ~RGB(82,81,82)
 
 // ── Zoom / radius dialog ──────────────────────────────────────────────────────
 // Taller panel that fills most of the screen; contains an input field,
@@ -644,12 +645,17 @@ static void draw_button(int32_t x, int32_t y, int32_t width,
     tft.fillRoundRect(x, y, width, kButtonH, 6, face);
 
     if (!disabled) {
-        const uint32_t hiC = pressed ? kBtnSh : kBtnHi;
-        const uint32_t shC = pressed ? kBtnHi : kBtnSh;
-        tft.drawFastHLine(x + 7, y + 2,            width - 14, hiC); // top
-        tft.drawFastVLine(x + 2, y + 7,            kButtonH - 14, hiC); // left
-        tft.drawFastHLine(x + 7, y + kButtonH - 3, width - 14, shC); // bottom
-        tft.drawFastVLine(x + width - 3, y + 7,    kButtonH - 14, shC); // right
+        const uint32_t hi1 = pressed ? kBtnSh  : kBtnHi;   // outer edge
+        const uint32_t hi2 = pressed ? kBtnSh  : kBtnHi2;  // inner bevel
+        const uint32_t shC = pressed ? kBtnHi  : kBtnSh;   // shadow
+        // outer bevel
+        tft.drawFastHLine(x + 7, y + 1,            width - 14, hi1); // top
+        tft.drawFastVLine(x + 1, y + 7,            kButtonH - 14, hi1); // left
+        tft.drawFastHLine(x + 7, y + kButtonH - 2, width - 14, shC);   // bottom
+        tft.drawFastVLine(x + width - 2, y + 7,    kButtonH - 14, shC); // right
+        // inner bevel — gives a chiselled depth effect
+        tft.drawFastHLine(x + 9, y + 3,            width - 18, hi2); // top inner
+        tft.drawFastVLine(x + 3, y + 9,            kButtonH - 18, hi2); // left inner
     }
     tft.drawRoundRect(x, y, width, kButtonH, 6, kBtnSh); // outer border
 
@@ -1221,12 +1227,17 @@ static void draw_zoom_key(int32_t x, int32_t y, int32_t width, int32_t height,
     const uint32_t face = pressed ? kBtnSh : kBtnFace;
     tft.fillRoundRect(x, y, width, height, 6, face);
 
-    const uint32_t hiC = pressed ? kBtnSh : kBtnHi;
-    const uint32_t shC = pressed ? kBtnHi : kBtnSh;
-    tft.drawFastHLine(x + 7, y + 2,           width  - 14, hiC);
-    tft.drawFastVLine(x + 2, y + 7,           height - 14, hiC);
-    tft.drawFastHLine(x + 7, y + height - 3,  width  - 14, shC);
-    tft.drawFastVLine(x + width - 3, y + 7,   height - 14, shC);
+    const uint32_t hi1 = pressed ? kBtnSh  : kBtnHi;
+    const uint32_t hi2 = pressed ? kBtnSh  : kBtnHi2;
+    const uint32_t shC = pressed ? kBtnHi  : kBtnSh;
+    // outer bevel
+    tft.drawFastHLine(x + 7, y + 1,           width  - 14, hi1);
+    tft.drawFastVLine(x + 1, y + 7,           height - 14, hi1);
+    tft.drawFastHLine(x + 7, y + height - 2,  width  - 14, shC);
+    tft.drawFastVLine(x + width - 2, y + 7,   height - 14, shC);
+    // inner bevel
+    tft.drawFastHLine(x + 9, y + 3,           width  - 18, hi2);
+    tft.drawFastVLine(x + 3, y + 9,           height - 18, hi2);
     tft.drawRoundRect(x, y, width, height, 6, kBtnSh);
 
     tft.setFont(&fonts::DejaVu18);

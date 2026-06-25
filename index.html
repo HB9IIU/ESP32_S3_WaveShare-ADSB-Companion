@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ESP32-S3 ADSB Companion — Flash Firmware</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: sans-serif;
+      max-width: 860px;
+      margin: 60px auto;
+      padding: 0 20px;
+      background: #111;
+      color: #eee;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 0.25em; }
+    h2 { font-size: 1rem; color: #aaa; margin: 2.5em 0 0.8em; letter-spacing: 0.05em; text-transform: uppercase; }
+    .meta { font-size: 0.85rem; color: #888; margin-bottom: 2em; }
+    p { line-height: 1.6; }
+
+    .flash-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2em;
+      margin-top: 1.5em;
+    }
+    esp-web-install-button { display: block; }
+
+    .note { font-size: 0.8rem; color: #666; margin-top: 3em; }
+
+    .screenshots { margin-top: 2.5em; }
+    .screenshots img {
+      width: 100%;
+      border-radius: 8px;
+      display: block;
+      margin-bottom: 0.4em;
+    }
+    .screenshots .caption {
+      font-size: 0.75rem;
+      color: #666;
+      text-align: center;
+      margin-bottom: 1.5em;
+    }
+    .screenshots .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1em;
+    }
+    .screenshots .grid .item { display: flex; flex-direction: column; }
+    .screenshots .grid .item img { margin-bottom: 0.3em; }
+    @media (max-width: 540px) {
+      .screenshots .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <h1>ESP32-S3 ADSB Companion</h1>
+  <div class="meta">Version 71026cb &mdash; built 2026-06-25</div>
+
+  <p>
+    Flash the latest firmware directly from this page to your
+    <a href="https://docs.waveshare.com/ESP32-S3-Touch-LCD-7" target="_blank" rel="noopener"
+       style="color:#aaa"><strong>Waveshare ESP32-S3 Touch LCD 7"</strong></a>.
+    Connect the board via USB, then click Install.
+  </p>
+  <p>Requires <strong>Chrome</strong> or <strong>Edge</strong> (Web Serial API).</p>
+
+  <script type="module"
+    src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module">
+  </script>
+
+  <div class="flash-block">
+    <esp-web-install-button manifest="manifest.json"></esp-web-install-button>
+  </div>
+
+  <div class="screenshots">
+    <h2>Screenshots</h2>
+
+    <img src="screenshots/mainscreen.png" alt="Main radar screen" />
+    <div class="caption">Live aircraft overlay on ESRI World Imagery satellite map</div>
+
+    <div class="grid">
+      <div class="item">
+        <img src="screenshots/menu.png" alt="Map actions menu" />
+        <div class="caption">Map actions menu — re-centre, zoom, save</div>
+      </div>
+      <div class="item">
+        <img src="screenshots/flightinfo.png" alt="Aircraft info page" />
+        <div class="caption">Flight details — route, altitude, speed, bearing</div>
+      </div>
+      <div class="item">
+        <img src="screenshots/plane.png" alt="Aircraft picture page" />
+        <div class="caption">Full-screen aircraft photo fetched from the Pi</div>
+      </div>
+      <div class="item">
+        <img src="screenshots/statistics.png" alt="Statistics page" />
+        <div class="caption">Live and all-time ADS-B records</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    Source: <a href="https://github.com/HB9IIU/ESP32_S3_WaveShare-ADSB-Companion"
+               style="color:#888">HB9IIU/ESP32_S3_WaveShare-ADSB-Companion</a>
+  </div>
+</body>
+</html>
